@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- import Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title> Chatroom App </title>
+</head>
+
+<body>
+    <div class="container" style="padding-top: 20px;">
+        <div id="messageList"></div>
+            <form>
+                <div class="form-group">
+                    <label> First Name: </label>
+                    <input type="text" class="form-control" id="name"/>
+                </div>
+                <div class="form-group">
+                    <label> Message: </label>
+                    <textarea class="form-control" id="message"></textarea>
+                </div>
+                <button class="btn btn-primary" type="submit" id="sendButton"> Send </button>
+            </form>
+            <br/>
+            <button class="btn btn-primary" type="submit" id="saveButton"> Save </button>
+        </div>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+<script>
+    $("#sendButton").click((evt) => {
+       evt.preventDefault();
+       
+       const name = $("#name").val();
+       const message = $("#message").val();
+
+       fetch ("http://127.0.0.1:8081/send",
+       {
+           method: "PUT",
+           body: JSON.stringify({name: name, message: message}),
+           headers: {
+               'Content-Type': 'application/json',
+           }
+       }
+       ).then(function(response) {
+           return response.json();
+       })
+       .then(function(myJson){
+           $("#message").val("");
+           $("#name").val("");
+           console.log(myJson);
+       });
+    });
+
+        fetch("http://127.0.0.1:8081/receive",
+        {
+            method: "GET"
+        }
+        ).then(function(response) {
+            return response.json();
+        })
+        .then(function(myJson){
+            let contentToUpdate = "";
+            for (const message of myJson.messages) {
+                contentToUpdate += `
+                <div class="card" style="margin-top: 15px;">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5> ${message.name}: </h5>
+                    </div>
+                    <div class="col-2 text-right">
+                        <span>${moment(message.timestamp).format("LT")}</span>
+                    </div>
+                </div>
+                <div>
+                    <p>${message.message}</p>
+                </div>
+            </div>
+            </div>
+                `;
+            }
+            $("#messageList").html(contentToUpdate);
+        });
+
+$("#saveButton").click((evt)=> {
+    evt.preventDefault();
+
+    fetch("http://127.0.0.1:8081/save",
+    {
+        method: "GET"
+    }
+    ).then(function(response){
+        return response.JSON();
+    })
+    .then(function(myJson) {console.log(myJson)});
+});
+
+$(() => {
+    const socket = io();
+
+    socket.on('send message', (msgs) => {
+        let contentToUpdate = "";
+        for (const message of msgs){
+            contentToUpdate += `
+            <div class="card" style="margin-top: 15px;">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5> ${message.name}: </h5>
+                    </div>
+                    <div class="col-2 text-right">
+                        <span>${moment(message.timestamp).format("LT")}</span>
+                    </div>
+                </div>
+                <div>
+                    <p>${message.message}</p>
+                </div>
+            </div>
+            </div>
+            `;
+        }
+        $('#messageList').html(contentToUpdate);
+    });
+
+    $('#sendButton').click((evt) => {
+        evt.preventDefault();
+
+        socket.emit("new message", {
+            name: $('#name').val(),
+            message: $('#message').val()
+        })
+
+        $('#name').val("")
+        $('#message').val("")
+    })
+});
+</script>
+
+</html>
+
+<!-- 127.0.0.1:8081 -->
