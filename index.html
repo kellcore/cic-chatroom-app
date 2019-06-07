@@ -14,20 +14,20 @@
 <body>
     <div class="container" style="padding-top: 20px;">
         <div id="messageList"></div>
-            <form>
-                <div class="form-group">
-                    <label> First Name: </label>
-                    <input type="text" class="form-control" id="name"/>
-                </div>
-                <div class="form-group">
-                    <label> Message: </label>
-                    <textarea class="form-control" id="message"></textarea>
-                </div>
-                <button class="btn btn-primary" type="submit" id="sendButton"> Send </button>
-            </form>
-            <br/>
-            <button class="btn btn-primary" type="submit" id="saveButton"> Save </button>
-        </div>
+        <form>
+            <div class="form-group">
+                <label> First Name: </label>
+                <input type="text" class="form-control" id="name" />
+            </div>
+            <div class="form-group">
+                <label> Message: </label>
+                <textarea class="form-control" id="message"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit" id="sendButton"> Send </button>
+        </form>
+        <br />
+        <button class="btn btn-primary" type="submit" id="saveButton"> Save </button>
+    </div>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -35,37 +35,37 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 <script>
     $("#sendButton").click((evt) => {
-       evt.preventDefault();
-       
-       const name = $("#name").val();
-       const message = $("#message").val();
+        evt.preventDefault();
 
-       fetch ("http://127.0.0.1:8081/send",
-       {
-           method: "PUT",
-           body: JSON.stringify({name: name, message: message}),
-           headers: {
-               'Content-Type': 'application/json',
-           }
-       }
-       ).then(function(response) {
-           return response.json();
-       })
-       .then(function(myJson){
-           $("#message").val("");
-           $("#name").val("");
-           console.log(myJson);
-       });
+        const name = $("#name").val();
+        const message = $("#message").val();
+
+        fetch("http://127.0.0.1:8081/send",
+            {
+                method: "PUT",
+                body: JSON.stringify({ name: name, message: message }),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }
+        ).then(function (response) {
+            return response.json();
+        })
+            .then(function (myJson) {
+                $("#message").val("");
+                $("#name").val("");
+                console.log(myJson);
+            });
     });
 
-        fetch("http://127.0.0.1:8081/receive",
+    fetch("http://127.0.0.1:8081/receive",
         {
             method: "GET"
         }
-        ).then(function(response) {
-            return response.json();
-        })
-        .then(function(myJson){
+    ).then(function (response) {
+        return response.json();
+    })
+        .then(function (myJson) {
             let contentToUpdate = "";
             for (const message of myJson.messages) {
                 contentToUpdate += `
@@ -89,26 +89,26 @@
             $("#messageList").html(contentToUpdate);
         });
 
-$("#saveButton").click((evt)=> {
-    evt.preventDefault();
+    $("#saveButton").click((evt) => {
+        evt.preventDefault();
 
-    fetch("http://127.0.0.1:8081/save",
-    {
-        method: "GET"
-    }
-    ).then(function(response){
-        return response.JSON();
-    })
-    .then(function(myJson) {console.log(myJson)});
-});
+        fetch("http://127.0.0.1:8081/save",
+            {
+                method: "GET"
+            }
+        ).then(function (response) {
+            return response.JSON();
+        })
+            .then(function (myJson) { console.log(myJson) });
+    });
 
-$(() => {
-    const socket = io();
+    $(() => {
+        const socket = io();
 
-    socket.on('send message', (msgs) => {
-        let contentToUpdate = "";
-        for (const message of msgs){
-            contentToUpdate += `
+        socket.on('send message', (msgs) => {
+            let contentToUpdate = "";
+            for (const message of msgs) {
+                contentToUpdate += `
             <div class="card" style="margin-top: 15px;">
             <div class="card-body">
                 <div class="row">
@@ -125,22 +125,22 @@ $(() => {
             </div>
             </div>
             `;
-        }
-        $('#messageList').html(contentToUpdate);
-    });
+            }
+            $('#messageList').html(contentToUpdate);
+        });
 
-    $('#sendButton').click((evt) => {
-        evt.preventDefault();
+        $('#sendButton').click((evt) => {
+            evt.preventDefault();
 
-        socket.emit("new message", {
-            name: $('#name').val(),
-            message: $('#message').val()
+            socket.emit("new message", {
+                name: $('#name').val(),
+                message: $('#message').val()
+            })
+
+            $('#name').val("")
+            $('#message').val("")
         })
-
-        $('#name').val("")
-        $('#message').val("")
-    })
-});
+    });
 </script>
 
 </html>

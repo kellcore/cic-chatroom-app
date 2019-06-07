@@ -16,9 +16,9 @@ io.on('connection', (socket) => {
             name: message.name,
             message: message.message,
             //timestamp: newDate()
-    });
-    console.log(messages);
-    io.emit('send message', messages);
+        });
+        console.log(messages);
+        io.emit('send message', messages);
     });
 });
 
@@ -39,7 +39,7 @@ app.put("/send", (req, res) => {
 
     console.log(messages);
 
-    res.send({status: "ok"});
+    res.send({ status: "ok" });
 });
 
 app.get("/receive", (req, res) => {
@@ -48,12 +48,12 @@ app.get("/receive", (req, res) => {
 
 app.get("/save", (req, res) => {
     let toSave = "";
-    for (const message of messages){
+    for (const message of messages) {
         toSave += `${message.name} (${moment(message.timestamp).format("LT")}): ${message.message}\n`;
     }
     fs.writeFileSync(__dirname + "/message.txt", toSave);
 
-    res.send({message: "ok"});
+    res.send({ message: "ok" });
 });
 
 /*app.listen(8081, () => {
